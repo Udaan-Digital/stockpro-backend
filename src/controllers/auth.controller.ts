@@ -2,11 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { pool } from '../config/database'
-import { redis } from '../config/redis'
 import { AppError } from '../middleware/errorHandler'
 import { z } from 'zod'
-
-const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
 
 function signAccessToken(payload: { id: string; email: string; name: string; role: string; companyId: string }): string {
   return jwt.sign(payload, process.env.JWT_SECRET as string, {
@@ -21,19 +18,26 @@ function signRefreshToken(userId: string): string {
 }
 
 async function storeRefreshToken(userId: string, token: string): Promise<void> {
-  const key = `refresh:${userId}:${token}`
-  await redis.set(key, userId, 'EX', REFRESH_TOKEN_TTL_SECONDS)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  await pool.query(
+    'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+    [userId, token, expiresAt]
+  )
 }
 
 async function deleteRefreshToken(userId: string, token: string): Promise<void> {
-  const key = `refresh:${userId}:${token}`
-  await redis.del(key)
+  await pool.query(
+    'DELETE FROM refresh_tokens WHERE user_id = $1 AND token = $2',
+    [userId, token]
+  )
 }
 
 async function validateRefreshToken(userId: string, token: string): Promise<boolean> {
-  const key = `refresh:${userId}:${token}`
-  const stored = await redis.get(key)
-  return stored === userId
+  const result = await pool.query(
+    'SELECT id FROM refresh_tokens WHERE user_id = $1 AND token = $2 AND expires_at > NOW()',
+    [userId, token]
+  )
+  return result.rows.length > 0
 }
 
 export const registerSchema = z.object({
