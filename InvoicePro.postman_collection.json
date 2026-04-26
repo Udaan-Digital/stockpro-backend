@@ -1,0 +1,1230 @@
+{
+  "info": {
+    "name": "InvoicePro API",
+    "_postman_id": "invoicepro-collection-v1",
+    "description": "Complete API collection for InvoicePro — GST-compliant invoice management system.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "company_id", "value": "", "type": "string" },
+    { "key": "user_id", "value": "", "type": "string" },
+    { "key": "customer_id", "value": "", "type": "string" },
+    { "key": "product_id", "value": "", "type": "string" },
+    { "key": "invoice_id", "value": "", "type": "string" },
+    { "key": "payment_id", "value": "", "type": "string" },
+    { "key": "supplier_id", "value": "", "type": "string" },
+    { "key": "po_id", "value": "", "type": "string" },
+    { "key": "vendor_invoice_id", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{access_token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "description": "Authentication endpoints — register, login, token refresh, logout, and profile.",
+      "auth": { "type": "noauth" },
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Baliram\",\n  \"email\": \"baliramgpt@gmail.com\",\n  \"password\": \"Admin@123\",\n  \"companyName\": \"Udaan Digital Pvt Ltd\",\n  \"gstin\": \"07AABCU1234A1Z5\",\n  \"phone\": \"9876543210\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.company && json.company.id) {",
+                  "  pm.collectionVariables.set('company_id', json.company.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"baliramgpt@gmail.com\",\n  \"password\": \"Admin@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", json.accessToken);",
+                  "pm.collectionVariables.set(\"refresh_token\", json.refreshToken);",
+                  "pm.collectionVariables.set(\"company_id\", json.user.companyId);",
+                  "pm.collectionVariables.set(\"user_id\", json.user.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh-token"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Company",
+      "description": "Company profile management.",
+      "item": [
+        {
+          "name": "Get Company",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{company_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{company_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Udaan Digital Pvt Ltd\",\n  \"gstin\": \"07AABCU1234A1Z5\",\n  \"pan\": \"AABCU1234A\",\n  \"phone\": \"9876543210\",\n  \"email\": \"baliramgpt@gmail.com\",\n  \"website\": \"https://udaandigital.in\",\n  \"address\": {\n    \"street\": \"123 Tech Park\",\n    \"city\": \"New Delhi\",\n    \"state\": \"Delhi\",\n    \"pincode\": \"110001\",\n    \"country\": \"India\"\n  },\n  \"bankDetails\": {\n    \"bankName\": \"HDFC Bank\",\n    \"accountNumber\": \"50100123456789\",\n    \"ifscCode\": \"HDFC0001234\",\n    \"accountType\": \"Current\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Users",
+      "description": "User management within the company.",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ravi Kumar\",\n  \"email\": \"ravi@udaandigital.in\",\n  \"password\": \"User@123\",\n  \"role\": \"STAFF\",\n  \"phone\": \"9123456780\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ravi Kumar\",\n  \"phone\": \"9123456781\",\n  \"role\": \"ACCOUNTANT\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Customers",
+      "description": "Customer/buyer management.",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers?page=1&limit=20&q=",
+              "host": ["{{base_url}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "q", "value": "", "description": "Search by name, email, or GSTIN" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": ["{{base_url}}"],
+              "path": ["customers"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ABC Retail Pvt Ltd\",\n  \"email\": \"accounts@abcretail.com\",\n  \"phone\": \"9988776655\",\n  \"gstin\": \"27AABCA1234B1Z9\",\n  \"billingAddress\": {\n    \"street\": \"456 Market Road\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\",\n    \"country\": \"India\"\n  },\n  \"paymentTerms\": \"NET30\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('customer_id', json.id);",
+                  "else if (json.customer && json.customer.id) pm.collectionVariables.set('customer_id', json.customer.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Customer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "{{customer_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "{{customer_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ABC Retail Pvt Ltd\",\n  \"email\": \"billing@abcretail.com\",\n  \"phone\": \"9988776600\",\n  \"paymentTerms\": \"NET15\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "{{customer_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Products",
+      "description": "Product/service catalog management.",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=20&q=&category=",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "q", "value": "", "description": "Search by name or SKU" },
+                { "key": "category", "value": "", "description": "Filter by category" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Pro 15\",\n  \"sku\": \"LAP-PRO-15\",\n  \"hsnCode\": \"8471\",\n  \"category\": \"Electronics\",\n  \"unit\": \"pcs\",\n  \"costPrice\": 40000,\n  \"sellingPrice\": 45000,\n  \"taxRate\": 18,\n  \"description\": \"High performance laptop with 15-inch display\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('product_id', json.id);",
+                  "else if (json.product && json.product.id) pm.collectionVariables.set('product_id', json.product.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sellingPrice\": 46000,\n  \"costPrice\": 41000,\n  \"description\": \"Updated: High performance laptop\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Stock",
+      "description": "Inventory and stock management.",
+      "item": [
+        {
+          "name": "Stock Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/summary",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Low Stock Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/low-items",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "low-items"]
+            }
+          }
+        },
+        {
+          "name": "Stock Valuation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/valuation",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "valuation"]
+            }
+          }
+        },
+        {
+          "name": "Get Stock for Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/product/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "product", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List Stock Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/transactions?productId={{product_id}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "transactions"],
+              "query": [
+                { "key": "productId", "value": "{{product_id}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stock In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/stock/in",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "in"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantity\": 50,\n  \"reason\": \"PURCHASE\",\n  \"notes\": \"Initial stock entry\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Stock Out",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/stock/out",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "out"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantity\": 5,\n  \"reason\": \"SALE\",\n  \"notes\": \"Manual deduction for invoice\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Adjust Stock",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/stock/adjust",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "adjust"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"newQuantity\": 45,\n  \"reason\": \"Physical count correction\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Invoices",
+      "description": "GST invoice creation and management.",
+      "item": [
+        {
+          "name": "List Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/invoices?page=1&limit=20&status=&paymentStatus=&from=&to=&customerId=",
+              "host": ["{{base_url}}"],
+              "path": ["invoices"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "", "description": "DRAFT | SENT | PAID | OVERDUE | CANCELLED" },
+                { "key": "paymentStatus", "value": "", "description": "UNPAID | PARTIAL | PAID" },
+                { "key": "from", "value": "", "description": "Start date YYYY-MM-DD" },
+                { "key": "to", "value": "", "description": "End date YYYY-MM-DD" },
+                { "key": "customerId", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/invoices",
+              "host": ["{{base_url}}"],
+              "path": ["invoices"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customer_id}}\",\n  \"customerName\": \"ABC Retail\",\n  \"invoiceDate\": \"2024-01-15\",\n  \"dueDate\": \"2024-02-14\",\n  \"paymentTerms\": \"NET30\",\n  \"isInterState\": false,\n  \"invoiceStatus\": \"SENT\",\n  \"items\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Laptop\",\n      \"hsnCode\": \"8471\",\n      \"quantity\": 2,\n      \"unit\": \"pcs\",\n      \"rate\": 45000,\n      \"discountPercent\": 5,\n      \"taxRate\": 18\n    }\n  ],\n  \"notes\": \"Payment within 30 days\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('invoice_id', json.id);",
+                  "else if (json.invoice && json.invoice.id) pm.collectionVariables.set('invoice_id', json.invoice.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceStatus\": \"SENT\",\n  \"notes\": \"Updated: Payment due within 30 days\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Download Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}/pdf",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}", "pdf"]
+            }
+          }
+        },
+        {
+          "name": "Send Invoice by Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}/send-email",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}", "send-email"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@abcretail.com\",\n  \"message\": \"Please find attached your invoice. Kindly process payment within due date.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Payments",
+      "description": "Payment recording and tracking against invoices.",
+      "item": [
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["payments"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/payments",
+              "host": ["{{base_url}}"],
+              "path": ["payments"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceId\": \"{{invoice_id}}\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"TRANSFER\",\n  \"paymentDate\": \"2024-01-20\",\n  \"referenceNumber\": \"NEFT123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('payment_id', json.id);",
+                  "else if (json.payment && json.payment.id) pm.collectionVariables.set('payment_id', json.payment.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Payments for Invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/invoice/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "invoice", "{{invoice_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Payment",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/payments/{{payment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "{{payment_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referenceNumber\": \"NEFT123456-REVISED\",\n  \"notes\": \"Corrected reference number\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Payment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/{{payment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "{{payment_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Suppliers",
+      "description": "Supplier/vendor management.",
+      "item": [
+        {
+          "name": "List Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/suppliers",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers"]
+            }
+          }
+        },
+        {
+          "name": "Create Supplier",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/suppliers",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TechSource Distributors\",\n  \"gstin\": \"29AABCT9876B1Z1\",\n  \"email\": \"purchase@techsource.in\",\n  \"phone\": \"9000111222\",\n  \"address\": {\n    \"street\": \"789 Industrial Area\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"pincode\": \"560001\",\n    \"country\": \"India\"\n  },\n  \"paymentTerms\": \"NET45\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('supplier_id', json.id);",
+                  "else if (json.supplier && json.supplier.id) pm.collectionVariables.set('supplier_id', json.supplier.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Supplier",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Supplier",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@techsource.in\",\n  \"paymentTerms\": \"NET30\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Supplier",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Purchase Orders",
+      "description": "Purchase order creation and receiving.",
+      "item": [
+        {
+          "name": "List Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders"]
+            }
+          }
+        },
+        {
+          "name": "Create Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierId\": \"{{supplier_id}}\",\n  \"supplierName\": \"TechSource Distributors\",\n  \"orderDate\": \"2024-01-10\",\n  \"expectedDeliveryDate\": \"2024-01-25\",\n  \"items\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Laptop Pro 15\",\n      \"quantity\": 20,\n      \"unit\": \"pcs\",\n      \"rate\": 40000,\n      \"taxRate\": 18\n    }\n  ],\n  \"notes\": \"Urgent order for Q1 stock\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('po_id', json.id);",
+                  "else if (json.purchaseOrder && json.purchaseOrder.id) pm.collectionVariables.set('po_id', json.purchaseOrder.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Purchase Order",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders", "{{po_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Purchase Order",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders", "{{po_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expectedDeliveryDate\": \"2024-01-28\",\n  \"notes\": \"Delivery date revised\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Purchase Order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders", "{{po_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Receive Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}/receive",
+              "host": ["{{base_url}}"],
+              "path": ["purchase-orders", "{{po_id}}", "receive"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receivedDate\": \"2024-01-25\",\n  \"items\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"receivedQuantity\": 20\n    }\n  ],\n  \"notes\": \"All items received in good condition\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. GST",
+      "description": "GST configuration, GSTR-1 generation, ITC and vendor invoice management.",
+      "item": [
+        {
+          "name": "Get GST Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gst/config",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "config"]
+            }
+          }
+        },
+        {
+          "name": "Update GST Config",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/gst/config",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "config"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gstin\": \"07AABCU1234A1Z5\",\n  \"pan\": \"AABCU1234A\",\n  \"taxRegime\": \"REGULAR\",\n  \"state\": \"Delhi\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Generate GSTR-1",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/gst/gstr1/generate",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "gstr1", "generate"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"month\": 1,\n  \"year\": 2024\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Get Tax Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gst/tax-summary?month=1&year=2024",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "tax-summary"],
+              "query": [
+                { "key": "month", "value": "1", "description": "1-12" },
+                { "key": "year", "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Vendor Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gst/vendor-invoices",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "vendor-invoices"]
+            }
+          }
+        },
+        {
+          "name": "Create Vendor Invoice",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/gst/vendor-invoices",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "vendor-invoices"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierId\": \"{{supplier_id}}\",\n  \"supplierName\": \"TechSource Distributors\",\n  \"supplierGstin\": \"29AABCT9876B1Z1\",\n  \"invoiceNumber\": \"TS/2024/001\",\n  \"invoiceDate\": \"2024-01-10\",\n  \"taxableAmount\": 800000,\n  \"igst\": 0,\n  \"cgst\": 72000,\n  \"sgst\": 72000,\n  \"totalAmount\": 944000,\n  \"isEligibleForITC\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('vendor_invoice_id', json.id);",
+                  "else if (json.vendorInvoice && json.vendorInvoice.id) pm.collectionVariables.set('vendor_invoice_id', json.vendorInvoice.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Vendor Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/gst/vendor-invoices/{{vendor_invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "vendor-invoices", "{{vendor_invoice_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isEligibleForITC\": true,\n  \"notes\": \"Verified against supplier's GSTR-1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Get ITC Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gst/itc-balance",
+              "host": ["{{base_url}}"],
+              "path": ["gst", "itc-balance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Reports",
+      "description": "Analytics and reporting endpoints.",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Sales Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/sales-summary?period=monthly&from=2024-01-01&to=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "sales-summary"],
+              "query": [
+                { "key": "period", "value": "monthly", "description": "daily | weekly | monthly" },
+                { "key": "from", "value": "2024-01-01" },
+                { "key": "to", "value": "2024-12-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/top-customers?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "top-customers"],
+              "query": [
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/top-products?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "top-products"],
+              "query": [
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Outstanding Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/outstanding-invoices",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "outstanding-invoices"]
+            }
+          }
+        },
+        {
+          "name": "Stock Value Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/stock-value",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "stock-value"]
+            }
+          }
+        },
+        {
+          "name": "Tax Summary Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/tax-summary?year=2024",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "tax-summary"],
+              "query": [
+                { "key": "year", "value": "2024" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
