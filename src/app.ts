@@ -11,6 +11,9 @@ import { errorHandler } from './middleware/errorHandler'
 
 const app = express()
 
+// Trust proxy for Vercel (required for correct IP detection behind load balancer)
+app.set('trust proxy', 1)
+
 app.use(helmet())
 
 const allowedOrigins = [

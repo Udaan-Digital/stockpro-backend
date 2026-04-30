@@ -5,15 +5,18 @@ dotenv.config()
 
 // Create pool if DATABASE_URL is provided (required for production)
 const dbUrl = process.env.DATABASE_URL
+
 if (!dbUrl) {
   console.error('DATABASE_URL environment variable is not set!')
+} else {
+  console.log('Database: Connection string configured')
 }
 
 export const pool = new Pool({
   connectionString: dbUrl,
   max: 5, // keep low for serverless (Vercel reuses functions but caps connections)
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000, // Increased timeout for serverless
 })
 
 pool.on('error', (err) => {
