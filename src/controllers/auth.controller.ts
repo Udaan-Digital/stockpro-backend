@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { pool } from '../config/database'
-import { redis } from '../config/redis'
+import { redis, getRedis } from '../config/redis'
 import { AppError } from '../middleware/errorHandler'
 import { z } from 'zod'
 
@@ -21,18 +21,24 @@ function signRefreshToken(userId: string): string {
 }
 
 async function storeRefreshToken(userId: string, token: string): Promise<void> {
+  const r = getRedis()
+  if (!r) return // Skip if Redis not configured
   const key = `refresh:${userId}:${token}`
-  await redis.set(key, userId, 'EX', REFRESH_TOKEN_TTL_SECONDS)
+  await r.set(key, userId, 'EX', REFRESH_TOKEN_TTL_SECONDS)
 }
 
 async function deleteRefreshToken(userId: string, token: string): Promise<void> {
+  const r = getRedis()
+  if (!r) return // Skip if Redis not configured
   const key = `refresh:${userId}:${token}`
-  await redis.del(key)
+  await r.del(key)
 }
 
 async function validateRefreshToken(userId: string, token: string): Promise<boolean> {
+  const r = getRedis()
+  if (!r) return true // If Redis not configured, allow token (fallback to JWT only)
   const key = `refresh:${userId}:${token}`
-  const stored = await redis.get(key)
+  const stored = await r.get(key)
   return stored === userId
 }
 
