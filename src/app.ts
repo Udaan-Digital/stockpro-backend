@@ -11,8 +11,9 @@ import { errorHandler } from './middleware/errorHandler'
 
 const app = express()
 
-// Trust proxy for Vercel/load balancers (must be set before rate limiters)
-app.set('trust proxy', true)
+// Trust exactly 1 proxy hop (Vercel edge → function). Must not be `true`
+// (too permissive) or `false` (breaks X-Forwarded-For detection).
+app.set('trust proxy', 1)
 
 app.use(helmet())
 
@@ -45,7 +46,7 @@ const limiter = rateLimit({
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { xForwardedForHeader: false },
+  validate: { trustProxy: false, xForwardedForHeader: false },
 })
 
 const authLimiter = rateLimit({
@@ -54,7 +55,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many login attempts, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { xForwardedForHeader: false },
+  validate: { trustProxy: false, xForwardedForHeader: false },
 })
 
 app.use('/api/auth/login', authLimiter)
