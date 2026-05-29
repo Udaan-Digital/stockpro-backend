@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Create pool if DATABASE_URL is provided (required for production)
 const dbUrl = process.env.DATABASE_URL
 
 if (!dbUrl) {
@@ -12,11 +11,15 @@ if (!dbUrl) {
   console.log('Database: Connection string configured')
 }
 
+// Serverless-optimised pool: single connection, SSL required for Supabase
 export const pool = new Pool({
   connectionString: dbUrl,
-  max: 5, // keep low for serverless (Vercel reuses functions but caps connections)
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000, // Increased timeout for serverless
+  max: 1,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 15000,
+  ssl: dbUrl?.includes('supabase') || dbUrl?.includes('pooler')
+    ? { rejectUnauthorized: false }
+    : undefined,
 })
 
 pool.on('error', (err) => {
@@ -27,5 +30,4 @@ pool.on('connect', () => {
   console.log('PostgreSQL connected')
 })
 
-// Helper function to safely use pool (for backward compatibility)
 export const getPool = () => pool
