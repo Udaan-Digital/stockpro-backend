@@ -71,13 +71,13 @@ export async function register(req: Request, res: Response, next: NextFunction):
       contactEmail,
       contactPhone,
       name,
-      email,
       password,
       phone,
     } = req.body
+    const email = (req.body.email as string).trim().toLowerCase()
 
     // Check if email already exists
-    const existing = await client.query('SELECT id FROM users WHERE email = $1', [email])
+    const existing = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [email])
     if (existing.rows.length > 0) {
       throw new AppError('Email already registered', 409)
     }
@@ -137,11 +137,12 @@ export async function register(req: Request, res: Response, next: NextFunction):
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { email, password } = req.body
+    const normalizedEmail = email.trim().toLowerCase()
 
     const result = await pool.query(
       `SELECT u.id, u.email, u.name, u.role, u.company_id, u.password_hash, u.is_active
-       FROM users u WHERE u.email = $1`,
-      [email]
+       FROM users u WHERE LOWER(u.email) = $1`,
+      [normalizedEmail]
     )
 
     if (result.rows.length === 0) {
