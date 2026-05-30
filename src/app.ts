@@ -17,25 +17,32 @@ app.set('trust proxy', 1)
 
 app.use(helmet())
 
+// Support comma-separated list in FRONTEND_URL, e.g. "https://a.com,https://b.com"
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URL?.split(',').map(s => s.trim()) ?? []),
   'http://localhost:5173',
   'http://localhost:3000',
-].filter(Boolean) as string[]
+].filter(Boolean)
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Electron desktop app, curl, mobile)
+      // Allow requests with no origin (server-to-server, curl, mobile)
       if (!origin) return callback(null, true)
-      if (allowedOrigins.some((o) => origin.startsWith(o))) return callback(null, true)
-      callback(new Error('Not allowed by CORS'))
+      if (allowedOrigins.some((o) => origin === o || origin.startsWith(o))) {
+        return callback(null, true)
+      }
+      // Return null (not an error) so preflight gets a proper 204, not a 500
+      return callback(null, false)
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 )
+
+// Explicitly respond to preflight so it always gets 204, not 404
+app.options('*', cors())
 
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
